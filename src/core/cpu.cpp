@@ -144,7 +144,7 @@ void CPU::exec(uint8_t program[]) {
 }
 
 void CPU::updateCarryFlag(uint8_t result, uint8_t a, uint8_t b) {
-    if(((a & 0x80) > 0) + ((b & 0x80) > 0) + ((registers.P & FLAG_CARRY) > 0) > 1) {
+    if(result < a || result < b) {
         registers.P |= FLAG_CARRY;
     } else {
         registers.P &= ~FLAG_CARRY;
@@ -168,7 +168,11 @@ void CPU::updateNegativeFlag(uint8_t value) {
 }
 
 void CPU::updateOverflowFlag(uint8_t result, uint8_t a, uint8_t b) {
-    registers.P &= (a^result)&(b^result);
+    result &= 0b10000000;
+    a      &= 0b10000000;
+    b      &= 0b10000000;
+
+    registers.P |= ((~a & b & result) | (a & ~b & ~result)) >> 1;
 }
 
 void CPU::updateFlags(uint8_t result, uint8_t a, uint8_t b) {
@@ -202,9 +206,7 @@ void CPU::ADC(uint8_t mode, uint16_t arg) {
     // Add with carry
     registers.A += arg + ((uint8_t) (registers.P & FLAG_CARRY) > 0);
 
-    updateZeroFlag(registers.A);
-    updateNegativeFlag(registers.A);
-    updateCarryFlag(registers.A, arg, (uint8_t) (registers.P & FLAG_CARRY) > 0);
+    updateFlags(registers.A, arg, (uint8_t) (registers.P & FLAG_CARRY) > 0);
 }
 
 void CPU::AND(uint8_t mode, uint16_t arg) {}
