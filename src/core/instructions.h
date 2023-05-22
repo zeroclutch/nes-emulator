@@ -71,7 +71,8 @@ enum AddressingMode {
    Indirect,
    Indirect_X,
    Indirect_Y,
-   Implied, // NoneAddressing
+   Relative,
+   NoneAddressing,
 };
 
 typedef struct instruction {

@@ -13,6 +13,66 @@ void validate(bool condition, const char *func) {
     }
 }
 
+void test_adc_add_with_immediate() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0x69, // ADC Imm
+        0x10,
+        0x69, // ADC Imm
+        0x10,
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.A == 0x20, __func__);
+}
+
+void test_adc_add_with_carry() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0x69, // ADC Imm
+        0xD0,
+        0x69, // ADC Imm
+        0x90,
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.P & FLAG_CARRY, __func__);
+}
+
+void test_adc_add_with_overflow() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0x69, // ADC Imm
+        0xD0,
+        0x69, // ADC Imm
+        0x90,
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.P & FLAG_OVERFLOW, __func__);
+}
+
 void test_lda_immediate_load_data() {
     // Create a CPU
     CPU cpu;
@@ -106,6 +166,10 @@ void test_inx_overflow() {
 }
 
 int main() {
+    test_adc_add_with_immediate();
+    test_adc_add_with_carry();
+    test_adc_add_with_overflow();
+
     test_lda_immediate_load_data();
     test_lda_zero_flag();
 
