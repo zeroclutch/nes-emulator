@@ -63,14 +63,13 @@ void CPU::exec(uint8_t program[]) {
     uint16_t arg;
     
     instruction_t instr;
-    instr_handler_t fn;
     
     while(opcode) {
         //**
         opcode = program[registers.PC];
         arg0 = program[registers.PC + 1];
         arg1 = program[registers.PC + 2];
-        emscripten_log(EM_LOG_CONSOLE, "0x%X opcode", opcode);
+        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode", opcode);
 
         // Fetch instruction
         instr = fetch(opcode);
@@ -88,7 +87,7 @@ void CPU::exec(uint8_t program[]) {
             default: opcode = 0x00; return;
         }
 
-        emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
+        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
 
         registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
         //*/
@@ -123,7 +122,7 @@ void CPU::memoryWrite(uint16_t address, uint8_t value) {
 void CPU::memoryLoad(uint8_t program[]) {
     // Load program into memory
     uint8_t *start_addr = memory + 0x80;
-    memcpy(start_addr, program, sizeof(program));
+    memcpy(start_addr, program, sizeof(*program));
 }
 
 uint16_t CPU::memoryReadu16(uint16_t address) {

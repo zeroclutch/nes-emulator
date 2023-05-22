@@ -13,7 +13,7 @@ COREDIR := $(SRCDIR)/core
 EMUDIR := $(SRCDIR)/emu
 TESTDIR := test
 OBJDIR := output
-APPDIR := app
+APPDIR := app/build
 
 # Source files
 CORE_SRCS := $(wildcard $(COREDIR)/*.cpp)
@@ -26,8 +26,8 @@ EMU_OBJS := $(patsubst $(EMUDIR)/%.cpp,$(OBJDIR)/emu/%.o,$(EMU_SRCS))
 TEST_OBJS := $(patsubst $(TESTDIR)/cpu/%.cpp,$(OBJDIR)/test/%.o,$(TEST_SRCS))
 
 # Executable name
-EXECUTABLE := $(APPDIR)/main_executable.html
-TEST_EXECUTABLE := $(APPDIR)/test_executable.html
+EXECUTABLE := $(APPDIR)/index.html
+TEST_EXECUTABLE := $(APPDIR)/test.html
 
 # Default target
 all: $(EXECUTABLE)

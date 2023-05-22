@@ -5,7 +5,10 @@
 #include <map>
 #include <emscripten.h>
 
-#include "./instructions.h"
+#include "memory.h"
+#include "instructions.h"
+
+#define VERBOSE 1
 
 // Registers
 struct registers {
@@ -41,7 +44,6 @@ class CPU {
         struct registers registers;
 
         // Memory
-        uint8_t memory[0xFF];
         uint8_t memoryRead(uint16_t address);
         void memoryWrite(uint16_t address, uint8_t value);
         void memoryLoad(uint8_t program[]);
