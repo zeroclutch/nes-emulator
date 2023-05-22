@@ -73,16 +73,16 @@ void test_adc_add_with_overflow() {
     validate(cpu.registers.P & FLAG_OVERFLOW, __func__);
 }
 
-void test_adc_add_with_immediate() {
+void test_and_with_immediate() {
     // Create a CPU
     CPU cpu;
 
     // Load program into memory
     uint8_t program[] = {
-        0x69, // ADC Imm
-        0x10,
-        0x69, // ADC Imm
-        0x10,
+        0xA9, // LDA Imm
+        0x8F,
+        0x29, // AND Imm
+        0xFA,
         0x00, // BRK
     };
 
@@ -90,7 +90,85 @@ void test_adc_add_with_immediate() {
     cpu.exec(program);
 
     // Assert that the accumulator contains the correct value
-    validate(cpu.registers.A == 0x20, __func__);
+    validate(cpu.registers.A == 0x8A, __func__);
+}
+
+void test_and_negative_flag() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0xA9, // LDA Imm
+        0xFF,
+        0x29, // AND Imm
+        0x80,
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
+}
+
+void test_and_zero_flag() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0xA9, // LDA Imm
+        0xFF,
+        0x29, // AND Imm
+        0x00,
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.P & FLAG_ZERO, __func__);
+}
+
+void test_asl_shift_accumulator() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0xA9, // LDA Imm
+        0xF8,
+        0x0A, // ASL Accumulator
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.A == 0xF0, __func__);
+}
+
+void test_asl_shift_with_carry() {
+    // Create a CPU
+    CPU cpu;
+
+    // Load program into memory
+    uint8_t program[] = {
+        0xA9, // LDA Imm
+        0xF8,
+        0x0A, // ASL Accumulator
+        0x00, // BRK
+    };
+
+    // Execute program
+    cpu.exec(program);
+
+    // Assert that the accumulator contains the correct value
+    validate(cpu.registers.P & FLAG_CARRY, __func__);
 }
 
 void test_lda_immediate_load_data() {
@@ -189,6 +267,13 @@ int main() {
     test_adc_add_with_immediate();
     test_adc_add_with_carry();
     test_adc_add_with_overflow();
+
+    test_and_with_immediate();
+    test_and_negative_flag();
+    test_and_zero_flag();
+
+    test_asl_shift_accumulator();
+    test_asl_shift_with_carry();
 
     test_lda_immediate_load_data();
     test_lda_zero_flag();

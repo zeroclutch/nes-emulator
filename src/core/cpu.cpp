@@ -202,15 +202,47 @@ uint16_t CPU::memoryReadu16(uint16_t address) {
 }
 
 // Instructions
+
+// Add with Carry
 void CPU::ADC(uint8_t mode, uint16_t arg) {
-    // Add with carry
     registers.A += arg + ((uint8_t) (registers.P & FLAG_CARRY) > 0);
 
     updateFlags(registers.A, arg, (uint8_t) (registers.P & FLAG_CARRY) > 0);
 }
 
-void CPU::AND(uint8_t mode, uint16_t arg) {}
-void CPU::ASL(uint8_t mode, uint16_t arg) {}
+// Logical AND
+void CPU::AND(uint8_t mode, uint16_t arg) {
+    registers.A &= arg;
+
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+// Arithmetic Shift Left
+void CPU::ASL(uint8_t mode, uint16_t arg) {
+    switch(mode) {
+        case NoneAddressing:
+            if(registers.A & 0x80) {
+                registers.P |= FLAG_CARRY;
+            } else {
+                registers.P &= ~FLAG_CARRY;
+            }
+            registers.A <<= 1;
+            break;
+        default:
+            if(arg & 0x80) {
+                registers.P |= FLAG_CARRY;
+            } else {
+                registers.P &= ~FLAG_CARRY;
+            }
+            registers.A = arg << 1;
+            break;
+    }
+
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
 void CPU::BCC(uint8_t mode, uint16_t arg) {}
 void CPU::BCS(uint8_t mode, uint16_t arg) {}
 void CPU::BEQ(uint8_t mode, uint16_t arg) {}
@@ -234,15 +266,15 @@ void CPU::DEY(uint8_t mode, uint16_t arg) {}
 void CPU::EOR(uint8_t mode, uint16_t arg) {}
 void CPU::INC(uint8_t mode, uint16_t arg) {}
 
+// Increment X Register
 void CPU::INX(uint8_t mode, uint16_t arg) {
-    // Increment X Register
     registers.X++;
     updateZeroFlag(registers.X);
     updateNegativeFlag(registers.X);
 }
 
+// Increment Y Register
 void CPU::INY(uint8_t mode, uint16_t arg) {
-    // Increment X Register
     registers.Y++;
     updateZeroFlag(registers.Y);
     updateNegativeFlag(registers.Y);
@@ -251,22 +283,22 @@ void CPU::INY(uint8_t mode, uint16_t arg) {
 void CPU::JMP(uint8_t mode, uint16_t arg) {}
 void CPU::JSR(uint8_t mode, uint16_t arg) {}
 
+// Load Accumulator
 void CPU::LDA(uint8_t mode, uint16_t arg) {
-    // Load Accumulator
     registers.A = (uint8_t) arg;
     updateZeroFlag(registers.A);
     updateNegativeFlag(registers.A);
 }
 
+// Load X Register
 void CPU::LDX(uint8_t mode, uint16_t arg) {
-    // Load X Register
     registers.X = (uint8_t) arg;
     updateZeroFlag(registers.X);
     updateNegativeFlag(registers.X);
 }
 
+// Load Y Register
 void CPU::LDY(uint8_t mode, uint16_t arg) {
-    // Load Y Register
     registers.Y = (uint8_t) arg;
     updateZeroFlag(registers.Y);
     updateNegativeFlag(registers.Y);
@@ -291,22 +323,34 @@ void CPU::STA(uint8_t mode, uint16_t arg) {}
 void CPU::STX(uint8_t mode, uint16_t arg) {}
 void CPU::STY(uint8_t mode, uint16_t arg) {}
 
+// Transfer Accumulator to X
 void CPU::TAX(uint8_t mode, uint16_t arg) {
-    // Transfer Accumulator to X
     registers.X = registers.A;
     updateZeroFlag(registers.X);
     updateNegativeFlag(registers.X);
 }
 
-void CPU::TAY(uint8_t mode, uint16_t arg) {}
+// Transfer Accumulator to Y
+void CPU::TAY(uint8_t mode, uint16_t arg) {
+    registers.Y = registers.A;
+    updateZeroFlag(registers.Y);
+    updateNegativeFlag(registers.Y);
+}
+
 void CPU::TSX(uint8_t mode, uint16_t arg) {}
 
+// Transfer X to Accumulator
 void CPU::TXA(uint8_t mode, uint16_t arg) {
-    // Transfer X to Accumulator
     registers.A = registers.X;
     updateZeroFlag(registers.X);
     updateNegativeFlag(registers.X);
 }
 
 void CPU::TXS(uint8_t mode, uint16_t arg) {}
-void CPU::TYA(uint8_t mode, uint16_t arg) {}
+
+// Transfer Y to Accumulator
+void CPU::TYA(uint8_t mode, uint16_t arg) {
+    registers.A = registers.Y;
+    updateZeroFlag(registers.Y);
+    updateNegativeFlag(registers.Y);
+}
