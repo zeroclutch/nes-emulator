@@ -39,23 +39,23 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
         case ZeroPage_Y:
             return (uint16_t) memoryRead(arg0 + registers.Y);
         case Absolute:
-            return ((arg0 << 8) | arg1);
+            return CONCAT(arg0, arg1);
         case Absolute_X:
-            return ((arg0 << 8) | arg1) + registers.X;
+            return CONCAT(arg0, arg1) + registers.X;
         case Absolute_Y:
-            return ((arg0 << 8) | arg1) + registers.Y;
+            return CONCAT(arg0, arg1) + registers.Y;
         case Indirect:
-            return memoryRead((arg0 << 8) | arg1);
+            return memoryRead(CONCAT(arg0, arg1));
         case Indirect_X:
-            return memoryRead(((arg0 << 8) | arg1)) + registers.X;
+            return memoryRead(CONCAT(arg0, arg1)) + registers.X;
         case Indirect_Y:
-            return memoryRead(((arg0 << 8) | arg1)) + registers.Y;
+            return memoryRead(CONCAT(arg0, arg1)) + registers.Y;
         default:
             return 0x0000; // TODO: Throw error
     }
 }
 
-void CPU::exec(instruction_t *instr, uint8_t opcode, uint8_t arg) {
+void CPU::exec(instruction_t *instr, uint8_t opcode, uint16_t arg) {
     // Execute instruction
     switch(instr->name) {
         case INSTR_BRK: opcode = 0x00; break;
@@ -206,7 +206,7 @@ void CPU::memoryLoad(uint8_t block[], size_t size) {
 }
 
 uint16_t CPU::memoryReadu16(uint16_t address) {
-    return (memory[address] << 8) | memory[address + 1];
+    return (memory[address + 1] << 8) | memory[address];
 }
 
 // Instructions
@@ -396,7 +396,8 @@ void CPU::SEI(uint8_t mode, uint16_t arg) {}
 
 // Store accumulator
 void CPU::STA(uint8_t mode, uint16_t arg) {
-    memoryWrite(arg, registers.A);
+    memory[arg] = registers.A;
+    // memoryWrite(arg, registers.A);
 }
 
 // Store X

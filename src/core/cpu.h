@@ -9,6 +9,7 @@
 #include "instructions.h"
 
 #define VERBOSE 0
+#define CONCAT(arg0, arg1) (((uint16_t) arg1) << 8) | arg0
 
 // Registers
 struct registers {
@@ -49,7 +50,7 @@ class CPU {
         // Methods
         instruction_t fetch(uint8_t opcode);
         uint16_t decode(uint8_t arg0, uint8_t arg1, uint8_t mode);
-        void exec(instruction_t *instr, uint8_t opcode, uint8_t arg);
+        void exec(instruction_t *instr, uint8_t opcode, uint16_t arg);
         void run(uint8_t program[], size_t program_size);
 
         // Flags

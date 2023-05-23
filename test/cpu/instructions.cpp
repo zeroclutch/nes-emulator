@@ -224,14 +224,14 @@ void test_sta_store_accumulator_with_absolute() {
         0xA9, // LDA Imm
         0x42,
         0x8D, // STA Absolute
-        0x01,
         0x00,
+        0x05,
         0x00, // BRK
     };
 
     cpu.run(program, sizeof(program));
 
-    validate(cpu.memoryRead(0x0100) == 0x42, __func__);
+    validate(cpu.memoryRead(0x0500) == 0x42, __func__);
 }
 
 void test_tax_move_a_to_x() {
