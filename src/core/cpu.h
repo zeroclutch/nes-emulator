@@ -45,6 +45,7 @@ class CPU {
         uint8_t memoryRead(uint16_t address);
         uint16_t memoryReadu16(uint16_t address);
         void memoryWrite(uint16_t address, uint8_t value);
+        void memoryWriteu16(uint16_t address, uint16_t value);
         void memoryLoad(uint8_t block[], size_t size);
 
         // Methods

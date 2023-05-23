@@ -33,11 +33,11 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
         case Immediate:
             return (uint16_t) arg0;
         case ZeroPage:
-            return (uint16_t) memoryRead(arg0);
+            return (uint16_t) memoryReadu16(arg0);
         case ZeroPage_X:
-            return (uint16_t) memoryRead(arg0 + registers.X);
+            return (uint16_t) memoryReadu16(arg0 + registers.X);
         case ZeroPage_Y:
-            return (uint16_t) memoryRead(arg0 + registers.Y);
+            return (uint16_t) memoryReadu16(arg0 + registers.Y);
         case Absolute:
             return CONCAT(arg0, arg1);
         case Absolute_X:
@@ -45,11 +45,11 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
         case Absolute_Y:
             return CONCAT(arg0, arg1) + registers.Y;
         case Indirect:
-            return memoryRead(CONCAT(arg0, arg1));
+            return memoryReadu16(CONCAT(arg0, arg1));
         case Indirect_X:
-            return memoryRead(CONCAT(arg0, arg1)) + registers.X;
+            return memoryReadu16(CONCAT(arg0, arg1)) + registers.X;
         case Indirect_Y:
-            return memoryRead(CONCAT(arg0, arg1)) + registers.Y;
+            return memoryReadu16(CONCAT(arg0, arg1)) + registers.Y;
         default:
             return 0x0000; // TODO: Throw error
     }
@@ -195,18 +195,23 @@ uint8_t CPU::memoryRead(uint16_t address) {
     return memory[address];
 }
 
+uint16_t CPU::memoryReadu16(uint16_t address) {
+    return CONCAT(memory[address], memory[address + 1]);
+}
+
 void CPU::memoryWrite(uint16_t address, uint8_t value) {
     memory[address] = value;
+}
+
+void CPU::memoryWriteu16(uint16_t address, uint16_t value) {
+    memory[address] = (uint8_t) value;
+    memory[address + 1] = (uint8_t) (value >> 8);
 }
 
 void CPU::memoryLoad(uint8_t block[], size_t size) {
     // Load array into memory
     uint8_t *start_addr = &memory[MEM_PROGRAM_START];
     memcpy(start_addr, block, size);
-}
-
-uint16_t CPU::memoryReadu16(uint16_t address) {
-    return (memory[address + 1] << 8) | memory[address];
 }
 
 // Instructions
@@ -396,8 +401,7 @@ void CPU::SEI(uint8_t mode, uint16_t arg) {}
 
 // Store accumulator
 void CPU::STA(uint8_t mode, uint16_t arg) {
-    memory[arg] = registers.A;
-    // memoryWrite(arg, registers.A);
+    memoryWrite(arg, registers.A);
 }
 
 // Store X
