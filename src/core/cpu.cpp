@@ -268,7 +268,7 @@ void CPU::BEQ(uint8_t mode, uint16_t arg) {
 
 // Bit Test
 void CPU::BIT(uint8_t mode, uint16_t arg) {
-    if(arg & registers.A == 0) registers.P |= FLAG_ZERO;
+    if((arg & registers.A) == 0) registers.P |= FLAG_ZERO;
     registers.P &= ~FLAG_NEGATIVE & ~FLAG_CARRY;
     registers.P |= (arg & 0x80) | ((arg & 0x40) >> 6);
 }
@@ -393,9 +393,21 @@ void CPU::SBC(uint8_t mode, uint16_t arg) {}
 void CPU::SEC(uint8_t mode, uint16_t arg) {}
 void CPU::SED(uint8_t mode, uint16_t arg) {}
 void CPU::SEI(uint8_t mode, uint16_t arg) {}
-void CPU::STA(uint8_t mode, uint16_t arg) {}
-void CPU::STX(uint8_t mode, uint16_t arg) {}
-void CPU::STY(uint8_t mode, uint16_t arg) {}
+
+// Store accumulator
+void CPU::STA(uint8_t mode, uint16_t arg) {
+    memoryWrite(arg, registers.A);
+}
+
+// Store X
+void CPU::STX(uint8_t mode, uint16_t arg) {
+    memoryWrite(arg, registers.X);
+}
+
+// Store Y
+void CPU::STY(uint8_t mode, uint16_t arg) {
+    memoryWrite(arg, registers.Y);
+}
 
 // Transfer Accumulator to X
 void CPU::TAX(uint8_t mode, uint16_t arg) {

@@ -7,9 +7,9 @@
 
 void validate(bool condition, const char *func) {
     if(condition) {
-        emscripten_log(EM_LOG_CONSOLE, "%s passed", func);
+        emscripten_log(EM_LOG_CONSOLE, "    %s passed", func);
     } else {
-        emscripten_log(EM_LOG_CONSOLE, "%s failed", func);
+        emscripten_log(EM_LOG_CONSOLE, "!!! %s failed", func);
     }
 }
 
@@ -203,7 +203,6 @@ void test_lda_zero_flag() {
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
 
-
 void test_lda_negative_flag() {
     CPU cpu;
 
@@ -216,6 +215,23 @@ void test_lda_negative_flag() {
     cpu.run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
+}
+
+void test_sta_store_accumulator_with_absolute() {
+    CPU cpu;
+
+    uint8_t program[] = {
+        0xA9, // LDA Imm
+        0x42,
+        0x8D, // STA Absolute
+        0x01,
+        0x00,
+        0x00, // BRK
+    };
+
+    cpu.run(program, sizeof(program));
+
+    validate(cpu.memoryRead(0x0100) == 0x42, __func__);
 }
 
 void test_tax_move_a_to_x() {
@@ -277,6 +293,9 @@ int main() {
 
     test_lda_immediate_load_data();
     test_lda_zero_flag();
+    test_lda_negative_flag();
+
+    test_sta_store_accumulator_with_absolute();
 
     test_tax_move_a_to_x();
     test_inx_overflow();
