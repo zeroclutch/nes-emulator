@@ -2,7 +2,7 @@
 
 CPU::CPU() {
     // Initialize registers
-    registers.PC = 0x00;
+    registers.PC = MEM_PROGRAM_START;
     registers.SP = 0x00;
     registers.A  = 0x00;
     registers.X  = 0x00;
@@ -16,7 +16,7 @@ CPU::~CPU() {
 
 void CPU::reset() {
     // Initialize registers
-    registers.PC = memoryReadu16(0xFFFC);
+    registers.PC = memoryReadu16(MEM_RESET_LOCATION);
     registers.SP = 0x00;
     registers.A  = 0x00;
     registers.X  = 0x00;
@@ -55,92 +55,100 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
     }
 }
 
-void CPU::exec(uint8_t program[]) {
+void CPU::exec(instruction_t *instr, uint8_t opcode, uint8_t arg) {
+    // Execute instruction
+    switch(instr->name) {
+        case INSTR_BRK: opcode = 0x00; break;
+
+        case INSTR_ADC: ADC(instr->mode, arg); break;
+        case INSTR_AND: AND(instr->mode, arg); break;
+        case INSTR_ASL: ASL(instr->mode, arg); break;
+        case INSTR_BCC: BCC(instr->mode, arg); break;
+        case INSTR_BCS: BCS(instr->mode, arg); break;
+        case INSTR_BEQ: BEQ(instr->mode, arg); break;
+        case INSTR_BIT: BIT(instr->mode, arg); break;
+        case INSTR_BMI: BMI(instr->mode, arg); break;
+        case INSTR_BNE: BNE(instr->mode, arg); break;
+        case INSTR_BPL: BPL(instr->mode, arg); break;
+        case INSTR_BVC: BVC(instr->mode, arg); break;
+        case INSTR_BVS: BVS(instr->mode, arg); break;
+        case INSTR_CLC: CLC(instr->mode, arg); break;
+        case INSTR_CLD: CLD(instr->mode, arg); break;
+        case INSTR_CLI: CLI(instr->mode, arg); break;
+        case INSTR_CLV: CLV(instr->mode, arg); break;
+        case INSTR_CMP: CMP(instr->mode, arg); break;
+        case INSTR_CPX: CPX(instr->mode, arg); break;
+        case INSTR_CPY: CPY(instr->mode, arg); break;
+        case INSTR_DEC: DEC(instr->mode, arg); break;
+        case INSTR_DEX: DEX(instr->mode, arg); break;
+        case INSTR_DEY: DEY(instr->mode, arg); break;
+        case INSTR_EOR: EOR(instr->mode, arg); break;
+        case INSTR_INC: INC(instr->mode, arg); break;
+        case INSTR_INX: INX(instr->mode, arg); break;
+        case INSTR_INY: INY(instr->mode, arg); break;
+        case INSTR_JMP: JMP(instr->mode, arg); break;
+        case INSTR_JSR: JSR(instr->mode, arg); break;
+        case INSTR_LDA: LDA(instr->mode, arg); break;
+        case INSTR_LDX: LDX(instr->mode, arg); break;
+        case INSTR_LDY: LDY(instr->mode, arg); break;
+        case INSTR_LSR: LSR(instr->mode, arg); break;
+        case INSTR_NOP: NOP(instr->mode, arg); break;
+        case INSTR_ORA: ORA(instr->mode, arg); break;
+        case INSTR_PHA: PHA(instr->mode, arg); break;
+        case INSTR_PHP: PHP(instr->mode, arg); break;
+        case INSTR_PLA: PLA(instr->mode, arg); break;
+        case INSTR_PLP: PLP(instr->mode, arg); break;
+        case INSTR_ROL: ROL(instr->mode, arg); break;
+        case INSTR_ROR: ROR(instr->mode, arg); break;
+        case INSTR_RTI: RTI(instr->mode, arg); break;
+        case INSTR_RTS: RTS(instr->mode, arg); break;
+        case INSTR_SBC: SBC(instr->mode, arg); break;
+        case INSTR_SEC: SEC(instr->mode, arg); break;
+        case INSTR_SED: SED(instr->mode, arg); break;
+        case INSTR_SEI: SEI(instr->mode, arg); break;
+        case INSTR_STA: STA(instr->mode, arg); break;
+        case INSTR_STX: STX(instr->mode, arg); break;
+        case INSTR_STY: STY(instr->mode, arg); break;
+        case INSTR_TAX: TAX(instr->mode, arg); break;
+        case INSTR_TAY: TAY(instr->mode, arg); break;
+        case INSTR_TSX: TSX(instr->mode, arg); break;
+        case INSTR_TXA: TXA(instr->mode, arg); break;
+        case INSTR_TXS: TXS(instr->mode, arg); break;
+        case INSTR_TYA: TYA(instr->mode, arg); break;
+
+        default: opcode = 0x00; return; // TODO: Throw exception
+    }
+}
+
+void CPU::run(uint8_t program[], size_t program_size) {
+    memoryLoad(program, program_size);
+    if(VERBOSE > 2) emscripten_log(EM_LOG_CONSOLE, "program size %u", program_size);
+
     uint8_t opcode = 0x01; // Initialize to a non-zero value
     
     uint8_t arg0;
     uint8_t arg1;
     uint16_t arg;
-    
+
     instruction_t instr;
-    
+
+    // TODO: Consider using emscripten_set_main_loop 
     while(opcode) {
-        opcode = program[registers.PC];
-        arg0 = program[registers.PC + 1];
-        arg1 = program[registers.PC + 2];
-        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode", opcode);
+        opcode = memory[registers.PC];
+        arg0 = memory[registers.PC + 1];
+        arg1 = memory[registers.PC + 2];
+        if(VERBOSE > 0) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode, 0x%X program counter", opcode, registers.PC);
 
         // Fetch instruction
         instr = fetch(opcode);
         arg = decode(arg0, arg1, instr.mode);
 
-        // Execute instruction
-        switch(instr.name) {
-            case INSTR_BRK: opcode = 0x00; break;
+        exec(&instr, opcode, arg);
 
-            case INSTR_ADC: ADC(instr.mode, arg); break;
-            case INSTR_AND: AND(instr.mode, arg); break;
-            case INSTR_ASL: ASL(instr.mode, arg); break;
-            case INSTR_BCC: BCC(instr.mode, arg); break;
-            case INSTR_BCS: BCS(instr.mode, arg); break;
-            case INSTR_BEQ: BEQ(instr.mode, arg); break;
-            case INSTR_BIT: BIT(instr.mode, arg); break;
-            case INSTR_BMI: BMI(instr.mode, arg); break;
-            case INSTR_BNE: BNE(instr.mode, arg); break;
-            case INSTR_BPL: BPL(instr.mode, arg); break;
-            case INSTR_BVC: BVC(instr.mode, arg); break;
-            case INSTR_BVS: BVS(instr.mode, arg); break;
-            case INSTR_CLC: CLC(instr.mode, arg); break;
-            case INSTR_CLD: CLD(instr.mode, arg); break;
-            case INSTR_CLI: CLI(instr.mode, arg); break;
-            case INSTR_CLV: CLV(instr.mode, arg); break;
-            case INSTR_CMP: CMP(instr.mode, arg); break;
-            case INSTR_CPX: CPX(instr.mode, arg); break;
-            case INSTR_CPY: CPY(instr.mode, arg); break;
-            case INSTR_DEC: DEC(instr.mode, arg); break;
-            case INSTR_DEX: DEX(instr.mode, arg); break;
-            case INSTR_DEY: DEY(instr.mode, arg); break;
-            case INSTR_EOR: EOR(instr.mode, arg); break;
-            case INSTR_INC: INC(instr.mode, arg); break;
-            case INSTR_INX: INX(instr.mode, arg); break;
-            case INSTR_INY: INY(instr.mode, arg); break;
-            case INSTR_JMP: JMP(instr.mode, arg); break;
-            case INSTR_JSR: JSR(instr.mode, arg); break;
-            case INSTR_LDA: LDA(instr.mode, arg); break;
-            case INSTR_LDX: LDX(instr.mode, arg); break;
-            case INSTR_LDY: LDY(instr.mode, arg); break;
-            case INSTR_LSR: LSR(instr.mode, arg); break;
-            case INSTR_NOP: NOP(instr.mode, arg); break;
-            case INSTR_ORA: ORA(instr.mode, arg); break;
-            case INSTR_PHA: PHA(instr.mode, arg); break;
-            case INSTR_PHP: PHP(instr.mode, arg); break;
-            case INSTR_PLA: PLA(instr.mode, arg); break;
-            case INSTR_PLP: PLP(instr.mode, arg); break;
-            case INSTR_ROL: ROL(instr.mode, arg); break;
-            case INSTR_ROR: ROR(instr.mode, arg); break;
-            case INSTR_RTI: RTI(instr.mode, arg); break;
-            case INSTR_RTS: RTS(instr.mode, arg); break;
-            case INSTR_SBC: SBC(instr.mode, arg); break;
-            case INSTR_SEC: SEC(instr.mode, arg); break;
-            case INSTR_SED: SED(instr.mode, arg); break;
-            case INSTR_SEI: SEI(instr.mode, arg); break;
-            case INSTR_STA: STA(instr.mode, arg); break;
-            case INSTR_STX: STX(instr.mode, arg); break;
-            case INSTR_STY: STY(instr.mode, arg); break;
-            case INSTR_TAX: TAX(instr.mode, arg); break;
-            case INSTR_TAY: TAY(instr.mode, arg); break;
-            case INSTR_TSX: TSX(instr.mode, arg); break;
-            case INSTR_TXA: TXA(instr.mode, arg); break;
-            case INSTR_TXS: TXS(instr.mode, arg); break;
-            case INSTR_TYA: TYA(instr.mode, arg); break;
-
-            default: opcode = 0x00; return; // TODO: Throw exception
-        }
-
-        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
-
+        if(VERBOSE > 1) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
         registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
     }
+    
 }
 
 void CPU::updateCarryFlag(uint8_t result, uint8_t a, uint8_t b) {
@@ -191,10 +199,10 @@ void CPU::memoryWrite(uint16_t address, uint8_t value) {
     memory[address] = value;
 }
 
-void CPU::memoryLoad(uint8_t program[]) {
-    // Load program into memory
-    uint8_t *start_addr = memory + 0x80;
-    memcpy(start_addr, program, sizeof(*program));
+void CPU::memoryLoad(uint8_t block[], size_t size) {
+    // Load array into memory
+    uint8_t *start_addr = &memory[MEM_PROGRAM_START];
+    memcpy(start_addr, block, size);
 }
 
 uint16_t CPU::memoryReadu16(uint16_t address) {

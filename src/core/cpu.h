@@ -42,15 +42,15 @@ class CPU {
 
         // Memory
         uint8_t memoryRead(uint16_t address);
-        void memoryWrite(uint16_t address, uint8_t value);
-        void memoryLoad(uint8_t program[]);
-        void load(uint8_t program[]);
         uint16_t memoryReadu16(uint16_t address);
+        void memoryWrite(uint16_t address, uint8_t value);
+        void memoryLoad(uint8_t block[], size_t size);
 
         // Methods
         instruction_t fetch(uint8_t opcode);
         uint16_t decode(uint8_t arg0, uint8_t arg1, uint8_t mode);
-        void exec(uint8_t program[]);
+        void exec(instruction_t *instr, uint8_t opcode, uint8_t arg);
+        void run(uint8_t program[], size_t program_size);
 
         // Flags
         void updateCarryFlag(uint8_t value, uint8_t a, uint8_t b);

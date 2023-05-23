@@ -27,7 +27,7 @@ void test_adc_add_with_immediate() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.A == 0x20, __func__);
@@ -47,7 +47,7 @@ void test_adc_add_with_carry() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.P & FLAG_CARRY, __func__);
@@ -67,7 +67,7 @@ void test_adc_add_with_overflow() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.P & FLAG_OVERFLOW, __func__);
@@ -87,7 +87,7 @@ void test_and_with_immediate() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.A == 0x8A, __func__);
@@ -107,7 +107,7 @@ void test_and_negative_flag() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
@@ -127,7 +127,7 @@ void test_and_zero_flag() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.P & FLAG_ZERO, __func__);
@@ -146,7 +146,7 @@ void test_asl_shift_accumulator() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.A == 0xF0, __func__);
@@ -165,7 +165,7 @@ void test_asl_shift_with_carry() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.P & FLAG_CARRY, __func__);
@@ -183,7 +183,7 @@ void test_lda_immediate_load_data() {
     };
 
     // Execute program
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.A == 0x42, __func__);
@@ -198,7 +198,7 @@ void test_lda_zero_flag() {
         0x00, // BRK
     };
     
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
@@ -213,7 +213,7 @@ void test_lda_negative_flag() {
         0x00, // BRK
     };
 
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
 }
@@ -226,7 +226,7 @@ void test_tax_move_a_to_x() {
         0x00, // BRK
     };
 
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     validate(cpu.registers.A == cpu.registers.X, __func__);
 }
@@ -242,7 +242,7 @@ void test_5_ops_working_together() {
         0x00, // BRK
     };
 
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     validate(cpu.registers.X == 0xC1, __func__);
 }
@@ -258,7 +258,7 @@ void test_inx_overflow() {
         0x00, // BRK
     };
     
-    cpu.exec(program);
+    cpu.run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x01, __func__);
 }
