@@ -122,7 +122,7 @@ void CPU::exec(instruction_t *instr, uint8_t opcode, uint8_t arg) {
 
 void CPU::run(uint8_t program[], size_t program_size) {
     memoryLoad(program, program_size);
-    if(VERBOSE > 2) emscripten_log(EM_LOG_CONSOLE, "program size %u", program_size);
+    if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "program size %u", program_size);
 
     uint8_t opcode = 0x01; // Initialize to a non-zero value
     
@@ -137,7 +137,7 @@ void CPU::run(uint8_t program[], size_t program_size) {
         opcode = memory[registers.PC];
         arg0 = memory[registers.PC + 1];
         arg1 = memory[registers.PC + 2];
-        if(VERBOSE > 0) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode, 0x%X program counter", opcode, registers.PC);
+        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode, 0x%X program counter", opcode, registers.PC);
 
         // Fetch instruction
         instr = fetch(opcode);
@@ -145,7 +145,7 @@ void CPU::run(uint8_t program[], size_t program_size) {
 
         exec(&instr, opcode, arg);
 
-        if(VERBOSE > 1) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
+        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
         registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
     }
     
@@ -251,21 +251,87 @@ void CPU::ASL(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.A);
 }
 
-void CPU::BCC(uint8_t mode, uint16_t arg) {}
-void CPU::BCS(uint8_t mode, uint16_t arg) {}
-void CPU::BEQ(uint8_t mode, uint16_t arg) {}
-void CPU::BIT(uint8_t mode, uint16_t arg) {}
-void CPU::BMI(uint8_t mode, uint16_t arg) {}
-void CPU::BNE(uint8_t mode, uint16_t arg) {}
-void CPU::BPL(uint8_t mode, uint16_t arg) {}
+// Branch if Carry Clear
+void CPU::BCC(uint8_t mode, uint16_t arg) {
+    if(!(registers.P & FLAG_CARRY)) registers.PC += arg;
+}
+
+// Branch if Carry Set
+void CPU::BCS(uint8_t mode, uint16_t arg) {
+    if(!(registers.P & FLAG_CARRY)) registers.PC += arg;
+}
+
+// Branch if Equal
+void CPU::BEQ(uint8_t mode, uint16_t arg) {
+    if(registers.P & FLAG_ZERO) registers.PC += arg;
+}
+
+// Bit Test
+void CPU::BIT(uint8_t mode, uint16_t arg) {
+    if(arg & registers.A == 0) registers.P |= FLAG_ZERO;
+    registers.P &= ~FLAG_NEGATIVE & ~FLAG_CARRY;
+    registers.P |= (arg & 0x80) | ((arg & 0x40) >> 6);
+}
+
+// Branch if Minus
+void CPU::BMI(uint8_t mode, uint16_t arg) {
+    if(registers.P & FLAG_NEGATIVE) registers.PC += arg;
+}
+
+// Branch if Not Equal
+void CPU::BNE(uint8_t mode, uint16_t arg) {
+    if(!(registers.P & FLAG_ZERO)) registers.PC += arg;
+}
+
+// Branch if Positive
+void CPU::BPL(uint8_t mode, uint16_t arg) {
+    if(!(registers.P & FLAG_NEGATIVE)) registers.PC += arg;
+}
+
+// Force interrupt
 void CPU::BRK(uint8_t mode, uint16_t arg) {}
-void CPU::BVC(uint8_t mode, uint16_t arg) {}
-void CPU::BVS(uint8_t mode, uint16_t arg) {}
-void CPU::CLC(uint8_t mode, uint16_t arg) {}
-void CPU::CLD(uint8_t mode, uint16_t arg) {}
-void CPU::CLI(uint8_t mode, uint16_t arg) {}
-void CPU::CLV(uint8_t mode, uint16_t arg) {}
-void CPU::CMP(uint8_t mode, uint16_t arg) {}
+
+// Branch if Overflow Clear
+void CPU::BVC(uint8_t mode, uint16_t arg) {
+    if(!(registers.P & FLAG_OVERFLOW)) registers.PC += arg;
+}
+
+// Branch if Overflow Set
+void CPU::BVS(uint8_t mode, uint16_t arg) {
+    if(registers.P & FLAG_OVERFLOW) registers.PC += arg;
+}
+
+// Clear Carry Flag
+void CPU::CLC(uint8_t mode, uint16_t arg) {
+    registers.P &= ~FLAG_CARRY;
+}
+
+// Clear Decimal Mode
+void CPU::CLD(uint8_t mode, uint16_t arg) {
+    registers.P &= ~FLAG_DECIMAL;
+}
+
+// Clear Interrupt Disable
+void CPU::CLI(uint8_t mode, uint16_t arg) {
+    registers.P &= ~FLAG_INTERRUPT;
+}
+
+// Clear Overflow Flag
+void CPU::CLV(uint8_t mode, uint16_t arg) {
+    registers.P &= ~FLAG_OVERFLOW;
+}
+
+// Compare
+void CPU::CMP(uint8_t mode, uint16_t arg) {
+    if(registers.A == arg) {
+        registers.P |= FLAG_ZERO | FLAG_CARRY;
+    } else if(registers.A >= arg) {
+        registers.P |= FLAG_CARRY;
+    }
+
+    updateNegativeFlag(registers.A - arg);
+}
+
 void CPU::CPX(uint8_t mode, uint16_t arg) {}
 void CPU::CPY(uint8_t mode, uint16_t arg) {}
 void CPU::DEC(uint8_t mode, uint16_t arg) {}
