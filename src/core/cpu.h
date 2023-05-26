@@ -41,13 +41,6 @@ class CPU {
         // Registers
         struct registers registers;
 
-        // Memory
-        uint8_t memoryRead(uint16_t address);
-        uint16_t memoryReadu16(uint16_t address);
-        void memoryWrite(uint16_t address, uint8_t value);
-        void memoryWriteu16(uint16_t address, uint16_t value);
-        void memoryLoad(uint8_t block[], size_t size);
-
         // Methods
         instruction_t fetch(uint8_t opcode);
         uint16_t decode(uint8_t arg0, uint8_t arg1, uint8_t mode);
@@ -61,6 +54,18 @@ class CPU {
         void updateNegativeFlag(uint8_t value);
 
         void updateFlags(uint8_t value, uint8_t a, uint8_t b);
+        
+        // Memory
+        uint8_t memoryRead(uint16_t address);
+        uint16_t memoryReadu16(uint16_t address);
+        void memoryWrite(uint16_t address, uint8_t value);
+        void memoryWriteu16(uint16_t address, uint16_t value);
+        void memoryLoad(uint8_t block[], size_t size);
+
+        void pushStack(uint8_t value);
+        uint8_t popStack();
+        void pushStacku16(uint16_t value);
+        uint16_t popStacku16();
 
         // Instructions
         void ADC(uint8_t mode, uint16_t arg);

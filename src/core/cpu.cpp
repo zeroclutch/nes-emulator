@@ -3,7 +3,7 @@
 CPU::CPU() {
     // Initialize registers
     registers.PC = MEM_PROGRAM_START;
-    registers.SP = 0x00;
+    registers.SP = 0xFF;
     registers.A  = 0x00;
     registers.X  = 0x00;
     registers.Y  = 0x00;
@@ -17,7 +17,7 @@ CPU::~CPU() {
 void CPU::reset() {
     // Initialize registers
     registers.PC = memoryReadu16(MEM_RESET_LOCATION);
-    registers.SP = 0x00;
+    registers.SP = 0xFF;
     registers.A  = 0x00;
     registers.X  = 0x00;
     registers.Y  = 0x00;
@@ -56,6 +56,7 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
             return 0x0000; // TODO: Throw error
     }
 }
+
 
 void CPU::exec(instruction_t *instr, uint8_t opcode, uint16_t arg) {
     // Execute instruction
@@ -216,6 +217,32 @@ void CPU::memoryLoad(uint8_t block[], size_t size) {
     memcpy(start_addr, block, size);
 }
 
+void CPU::pushStack(uint8_t value) {
+    registers.SP--;
+    memoryWrite(MEM_SYSTEM_STACK_START + registers.SP, value);
+
+    // TODO: Handle stack overflow
+}
+
+void CPU::pushStacku16(uint16_t value) {
+    pushStack((uint8_t) (value >> 8));
+    pushStack((uint8_t) value);
+}
+
+uint8_t CPU::popStack() {
+    uint8_t value = memoryRead(MEM_SYSTEM_STACK_START + registers.SP);
+    registers.SP++;
+    return value;
+
+    // TODO: Don't pop on empty stack
+}
+
+uint16_t CPU::popStacku16() {
+    uint16_t value = popStack();
+    value |= popStack() << 8;
+    return value;
+}
+
 // Instructions
 
 // Add with Carry
@@ -344,13 +371,66 @@ void CPU::CMP(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.A - arg);
 }
 
-void CPU::CPX(uint8_t mode, uint16_t arg) {}
-void CPU::CPY(uint8_t mode, uint16_t arg) {}
-void CPU::DEC(uint8_t mode, uint16_t arg) {}
-void CPU::DEX(uint8_t mode, uint16_t arg) {}
-void CPU::DEY(uint8_t mode, uint16_t arg) {}
-void CPU::EOR(uint8_t mode, uint16_t arg) {}
-void CPU::INC(uint8_t mode, uint16_t arg) {}
+// Compare X register
+void CPU::CPX(uint8_t mode, uint16_t arg) {
+    if(registers.X == arg) {
+        registers.P |= FLAG_ZERO | FLAG_CARRY;
+    } else if(registers.X >= arg) {
+        registers.P |= FLAG_CARRY;
+    }
+
+    updateNegativeFlag(registers.X - arg);
+}
+
+// Compare Y register
+void CPU::CPY(uint8_t mode, uint16_t arg) {
+    if(registers.Y == arg) {
+        registers.P |= FLAG_ZERO | FLAG_CARRY;
+    } else if(registers.Y >= arg) {
+        registers.P |= FLAG_CARRY;
+    }
+
+    updateNegativeFlag(registers.Y - arg);
+}
+
+// Decrement Memory
+void CPU::DEC(uint8_t mode, uint16_t arg) {
+    uint8_t value = ((uint8_t) arg) - 1;
+    memoryWrite(arg, value);
+
+    updateZeroFlag(value);
+    updateNegativeFlag(value);
+}
+
+// Decrement X Register
+void CPU::DEX(uint8_t mode, uint16_t arg) {
+    registers.X--;
+    updateZeroFlag(registers.X);
+    updateNegativeFlag(registers.X);
+}
+
+// Decrement Y Register
+void CPU::DEY(uint8_t mode, uint16_t arg) {
+    registers.Y--;
+    updateZeroFlag(registers.Y);
+    updateNegativeFlag(registers.Y);
+}
+
+// Exclusive OR
+void CPU::EOR(uint8_t mode, uint16_t arg) {
+    registers.A ^= arg;
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+// Increment Memory
+void CPU::INC(uint8_t mode, uint16_t arg) {
+    uint8_t value = ((uint8_t) arg) - 1;
+    memoryWrite(arg, value);
+
+    updateZeroFlag(value);
+    updateNegativeFlag(value);
+}
 
 // Increment X Register
 void CPU::INX(uint8_t mode, uint16_t arg) {
@@ -366,8 +446,24 @@ void CPU::INY(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.Y);
 }
 
-void CPU::JMP(uint8_t mode, uint16_t arg) {}
-void CPU::JSR(uint8_t mode, uint16_t arg) {}
+// Jump
+void CPU::JMP(uint8_t mode, uint16_t arg) {
+    switch(mode) {
+        case Absolute:
+            registers.PC = arg;
+            break;
+        case Indirect:
+            registers.PC = memoryReadu16(arg);
+            break;
+    }
+}
+
+// Jump to Subroutine
+void CPU::JSR(uint8_t mode, uint16_t arg) {
+    registers.PC--;
+    pushStacku16(registers.PC);
+    registers.PC = arg;
+}
 
 // Load Accumulator
 void CPU::LDA(uint8_t mode, uint16_t arg) {
@@ -406,6 +502,7 @@ void CPU::LSR(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.A);
 }
 
+// No Operation
 void CPU::NOP(uint8_t mode, uint16_t arg) {
     // Do nothing
 }
