@@ -50,6 +50,8 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
             return memoryReadu16(CONCAT(arg0, arg1)) + registers.X;
         case Indirect_Y:
             return memoryReadu16(CONCAT(arg0, arg1)) + registers.Y;
+        case Relative:
+            return (int8_t) arg0;
         default:
             return 0x0000; // TODO: Throw error
     }
@@ -58,7 +60,7 @@ uint16_t CPU::decode(uint8_t arg0, uint8_t arg1, uint8_t mode) {
 void CPU::exec(instruction_t *instr, uint8_t opcode, uint16_t arg) {
     // Execute instruction
     switch(instr->name) {
-        case INSTR_BRK: opcode = 0x00; break;
+        case INSTR_BRK: BRK(instr->mode, arg); break;
 
         case INSTR_ADC: ADC(instr->mode, arg); break;
         case INSTR_AND: AND(instr->mode, arg); break;
@@ -235,19 +237,10 @@ void CPU::AND(uint8_t mode, uint16_t arg) {
 void CPU::ASL(uint8_t mode, uint16_t arg) {
     switch(mode) {
         case NoneAddressing:
-            if(registers.A & 0x80) {
-                registers.P |= FLAG_CARRY;
-            } else {
-                registers.P &= ~FLAG_CARRY;
-            }
-            registers.A <<= 1;
-            break;
+            arg = registers.A;
         default:
-            if(arg & 0x80) {
-                registers.P |= FLAG_CARRY;
-            } else {
-                registers.P &= ~FLAG_CARRY;
-            }
+            registers.P &= ~FLAG_CARRY;
+            registers.P |= (arg & 0x80) ? FLAG_CARRY : 0;
             registers.A = arg << 1;
             break;
     }
@@ -263,7 +256,7 @@ void CPU::BCC(uint8_t mode, uint16_t arg) {
 
 // Branch if Carry Set
 void CPU::BCS(uint8_t mode, uint16_t arg) {
-    if(!(registers.P & FLAG_CARRY)) registers.PC += arg;
+    if(registers.P & FLAG_CARRY) registers.PC += arg;
 }
 
 // Branch if Equal
@@ -273,9 +266,12 @@ void CPU::BEQ(uint8_t mode, uint16_t arg) {
 
 // Bit Test
 void CPU::BIT(uint8_t mode, uint16_t arg) {
-    if((arg & registers.A) == 0) registers.P |= FLAG_ZERO;
-    registers.P &= ~FLAG_NEGATIVE & ~FLAG_CARRY;
-    registers.P |= (arg & 0x80) | ((arg & 0x40) >> 6);
+    arg &= registers.A;
+
+    registers.P &= ~FLAG_ZERO & ~FLAG_NEGATIVE & ~FLAG_OVERFLOW;
+    registers.P |= (arg & (FLAG_NEGATIVE | FLAG_OVERFLOW));
+    updateZeroFlag(arg);
+    
 }
 
 // Branch if Minus
@@ -294,7 +290,18 @@ void CPU::BPL(uint8_t mode, uint16_t arg) {
 }
 
 // Force interrupt
-void CPU::BRK(uint8_t mode, uint16_t arg) {}
+void CPU::BRK(uint8_t mode, uint16_t arg) {
+    // TODO: Add stack and interrupts
+
+    // registers.PC += 2;
+    // pushStack(registers.PC >> 8);
+    // pushStack(registers.PC & 0xFF);
+    // pushStack(registers.P);
+    // registers.P |= FLAG_INTERRUPT;
+    // registers.PC = memoryReadu16(0xFFFE);
+
+    registers.P |= FLAG_BREAK;
+}
 
 // Branch if Overflow Clear
 void CPU::BVC(uint8_t mode, uint16_t arg) {
@@ -383,8 +390,26 @@ void CPU::LDY(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.Y);
 }
 
-void CPU::LSR(uint8_t mode, uint16_t arg) {}
-void CPU::NOP(uint8_t mode, uint16_t arg) {}
+// Logical Shift Right
+void CPU::LSR(uint8_t mode, uint16_t arg) {
+    switch(mode) {
+        case NoneAddressing:
+            arg = registers.A;
+        default:
+            registers.P &= ~FLAG_CARRY;
+            registers.P |= (arg & 0x01) ? FLAG_CARRY : 0;
+            registers.A = arg >> 1;
+            break;
+    }
+
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+void CPU::NOP(uint8_t mode, uint16_t arg) {
+    // Do nothing
+}
+
 void CPU::ORA(uint8_t mode, uint16_t arg) {}
 void CPU::PHA(uint8_t mode, uint16_t arg) {}
 void CPU::PHP(uint8_t mode, uint16_t arg) {}

@@ -26,7 +26,7 @@ struct registers {
 #define FLAG_ZERO       0b00000010
 #define FLAG_INTERRUPT  0b00000100
 #define FLAG_DECIMAL    0b00001000
-#define FLAG_B          0b00010000
+#define FLAG_BREAK      0b00010000
 #define FLAG_UNUSED     0b00100000
 #define FLAG_OVERFLOW   0b01000000
 #define FLAG_NEGATIVE   0b10000000
