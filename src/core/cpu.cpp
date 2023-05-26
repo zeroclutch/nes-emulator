@@ -507,11 +507,35 @@ void CPU::NOP(uint8_t mode, uint16_t arg) {
     // Do nothing
 }
 
-void CPU::ORA(uint8_t mode, uint16_t arg) {}
-void CPU::PHA(uint8_t mode, uint16_t arg) {}
-void CPU::PHP(uint8_t mode, uint16_t arg) {}
-void CPU::PLA(uint8_t mode, uint16_t arg) {}
-void CPU::PLP(uint8_t mode, uint16_t arg) {}
+// Logical Inclusive OR
+void CPU::ORA(uint8_t mode, uint16_t arg) {
+    registers.A |= arg;
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+// Push Accumulator
+void CPU::PHA(uint8_t mode, uint16_t arg) {
+    pushStack(registers.A);
+}
+
+// Push Processor Status
+void CPU::PHP(uint8_t mode, uint16_t arg) {
+    pushStack(registers.P);
+}
+
+// Pull Accumulator
+void CPU::PLA(uint8_t mode, uint16_t arg) {
+    registers.A = popStack();
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+// Pull Processor Status
+void CPU::PLP(uint8_t mode, uint16_t arg) {
+    registers.P = popStack();
+}
+
 void CPU::ROL(uint8_t mode, uint16_t arg) {}
 void CPU::ROR(uint8_t mode, uint16_t arg) {}
 void CPU::RTI(uint8_t mode, uint16_t arg) {}
