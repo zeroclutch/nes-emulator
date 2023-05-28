@@ -536,14 +536,75 @@ void CPU::PLP(uint8_t mode, uint16_t arg) {
     registers.P = popStack();
 }
 
-void CPU::ROL(uint8_t mode, uint16_t arg) {}
-void CPU::ROR(uint8_t mode, uint16_t arg) {}
-void CPU::RTI(uint8_t mode, uint16_t arg) {}
-void CPU::RTS(uint8_t mode, uint16_t arg) {}
-void CPU::SBC(uint8_t mode, uint16_t arg) {}
-void CPU::SEC(uint8_t mode, uint16_t arg) {}
-void CPU::SED(uint8_t mode, uint16_t arg) {}
-void CPU::SEI(uint8_t mode, uint16_t arg) {}
+// Rotate left
+void CPU::ROL(uint8_t mode, uint16_t arg) {
+    switch(mode) {
+        case NoneAddressing:
+            arg = registers.A;
+        default:
+            uint8_t carry = arg & 0x80;
+            registers.P &= ~FLAG_CARRY;
+            registers.P |= carry ? FLAG_CARRY : 0;
+            registers.A = (arg << 1) | (carry >> 7);
+            break;
+    }
+
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+// Rotate right
+void CPU::ROR(uint8_t mode, uint16_t arg) {
+    switch(mode) {
+        case NoneAddressing:
+            arg = registers.A;
+        default:
+            uint8_t lsb = arg & 0x01;
+            registers.P &= ~FLAG_CARRY;
+            registers.P |= lsb ? FLAG_CARRY : 0;
+            registers.P |= lsb;
+            registers.A = (arg >> 1) | (lsb << 7);
+            break;
+    }
+
+    updateZeroFlag(registers.A);
+    updateNegativeFlag(registers.A);
+}
+
+// Return from interrupt
+void CPU::RTI(uint8_t mode, uint16_t arg) {
+    registers.P = popStack();
+    registers.PC = popStacku16();
+}
+
+// Return from subroutine
+void CPU::RTS(uint8_t mode, uint16_t arg) {
+    registers.PC = popStacku16();
+    registers.PC++;
+}
+
+// Subtract with carry
+void CPU::SBC(uint8_t mode, uint16_t arg) {
+    uint8_t cin = !((uint8_t) (registers.P & FLAG_CARRY) > 0);
+    registers.A -= arg + cin;
+
+    updateFlags(registers.A, ~((uint8_t) arg) + 1, cin);
+}
+
+// Set carry flag
+void CPU::SEC(uint8_t mode, uint16_t arg) {
+    registers.P |= FLAG_CARRY;
+}
+
+// Set decimal flag
+void CPU::SED(uint8_t mode, uint16_t arg) {
+    registers.P |= FLAG_DECIMAL;
+}
+
+// Set interrupt disable flag
+void CPU::SEI(uint8_t mode, uint16_t arg) {
+    registers.P |= FLAG_INTERRUPT;
+}
 
 // Store accumulator
 void CPU::STA(uint8_t mode, uint16_t arg) {
@@ -574,7 +635,12 @@ void CPU::TAY(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.Y);
 }
 
-void CPU::TSX(uint8_t mode, uint16_t arg) {}
+// Transfer Stack Pointer to X
+void CPU::TSX(uint8_t mode, uint16_t arg) {
+    registers.X = registers.SP;
+    updateZeroFlag(registers.X);
+    updateNegativeFlag(registers.X);
+}
 
 // Transfer X to Accumulator
 void CPU::TXA(uint8_t mode, uint16_t arg) {
@@ -583,7 +649,10 @@ void CPU::TXA(uint8_t mode, uint16_t arg) {
     updateNegativeFlag(registers.X);
 }
 
-void CPU::TXS(uint8_t mode, uint16_t arg) {}
+// Transfer X to Stack Pointer
+void CPU::TXS(uint8_t mode, uint16_t arg) {
+    registers.SP = registers.X;
+}
 
 // Transfer Y to Accumulator
 void CPU::TYA(uint8_t mode, uint16_t arg) {
