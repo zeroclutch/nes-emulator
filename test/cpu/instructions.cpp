@@ -966,6 +966,8 @@ int main() {
 
     test_clv();
 
+    
+
 
     test_lda_immediate_load_data();
     test_lda_zero_flag();

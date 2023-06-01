@@ -145,12 +145,24 @@ void CPU::run(void (*callback)(void)) {
     exec(&instr, opcode, arg);
 
     if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
-    registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
+    if(       
+        instr.name != INSTR_BCC
+        && instr.name != INSTR_BCS
+        && instr.name != INSTR_BEQ
+        && instr.name != INSTR_BIT
+        && instr.name != INSTR_BMI
+        && instr.name != INSTR_BNE
+        && instr.name != INSTR_BPL
+        && instr.name != INSTR_BVC
+        && instr.name != INSTR_BVS
+    ) registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
     
     if(callback) callback();
 }
 
 void CPU::run() {
+
+  emscripten_log(EM_LOG_CONSOLE, "running...");
     run(nullptr);
 }
 

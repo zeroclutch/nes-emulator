@@ -2,6 +2,7 @@
 // Emscripten is available under two separate licenses, the MIT license and the
 // University of Illinois/NCSA Open Source License.  Both these licenses can be
 // found in the LICENSE file.
+#include <emscripten.h>
 #include "graphics.h"
 
 NES_COLOR_RGB* getColor(int color) {
@@ -20,10 +21,10 @@ NES_COLOR_RGB* getColor(int color) {
 }
 
 int render(uint8_t *pixels, int width, int height) {
-  printf("rendered frame");
+  emscripten_log(EM_LOG_CONSOLE, "rendered frame");
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_Surface *screen = SDL_SetVideoMode(32, 32, 8, SDL_SWSURFACE);
+  SDL_Surface *screen = SDL_SetVideoMode(32, 32, 32, SDL_SWSURFACE);
 
 #ifdef TEST_SDL_LOCK_OPTS
   EM_ASM("SDL.defaults.copyOnLock = false; SDL.defaults.discardOnLock = true; SDL.defaults.opaqueFrontBuffer = false;");
@@ -31,25 +32,15 @@ int render(uint8_t *pixels, int width, int height) {
 
   if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
   for (int i = 0; i < 32; i++) {
-    for (int j = 0; j < 32 * 3; j+=3) {
-#ifdef TEST_SDL_LOCK_OPTS
-      // Alpha behaves like in the browser, so write proper opaque pixels.
-      int alpha = 255;
-#else
-      // To emulate native behavior with blitting to screen, alpha component is ignored. Test that it is so by outputting
-      // data (and testing that it does get discarded)
-      int alpha = (i+j) % 255;
-#endif
+    for (int j = 0; j < 32; j++) {
       // Read pixel
       NES_COLOR_RGB *color = getColor(pixels[i * 32 + j]);
 
-      *((Uint32*)screen->pixels + i * 32 + j) = SDL_MapRGBA(screen->format, color->r, color->g, color->b, alpha);
+      *((Uint32*)screen->pixels + i * 32 + j) = SDL_MapRGBA(screen->format, color->r, color->g, color->b, 255);
     }
   }
   if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
   SDL_Flip(screen); 
-
-  printf("rendered frame");
 
   return 0;
 }

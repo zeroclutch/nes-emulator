@@ -8,7 +8,7 @@
 #include "memory.h"
 #include "instructions.h"
 
-#define VERBOSE 0
+#define VERBOSE 1
 #define CONCAT(arg0, arg1) (((uint16_t) arg1) << 8) | arg0
 
 // Registers
