@@ -123,11 +123,8 @@ void CPU::exec(instruction_t *instr, uint8_t opcode, uint16_t arg) {
     }
 }
 
-void CPU::run(uint8_t program[], size_t program_size, void (*callback)(void)) {
-    memoryLoad(program, program_size);
-    if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "program size %u", program_size);
-
-    uint8_t opcode = 0x01; // Initialize to a non-zero value
+void CPU::run(void (*callback)(void)) {
+    uint8_t opcode; // Initialize to a non-zero value
     
     uint8_t arg0;
     uint8_t arg1;
@@ -136,27 +133,41 @@ void CPU::run(uint8_t program[], size_t program_size, void (*callback)(void)) {
     instruction_t instr;
 
     // TODO: Consider using emscripten_set_main_loop 
-    while(opcode) {
-        opcode = memory[registers.PC];
-        arg0 = memory[registers.PC + 1];
-        arg1 = memory[registers.PC + 2];
-        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode, 0x%X program counter", opcode, registers.PC);
+    opcode = memory[registers.PC];
+    arg0 = memory[registers.PC + 1];
+    arg1 = memory[registers.PC + 2];
+    if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "0x%X opcode, 0x%X program counter", opcode, registers.PC);
 
-        // Fetch instruction
-        instr = fetch(opcode);
-        arg = decode(arg0, arg1, instr.mode);
+    // Fetch instruction
+    instr = fetch(opcode);
+    arg = decode(arg0, arg1, instr.mode);
 
-        exec(&instr, opcode, arg);
+    exec(&instr, opcode, arg);
 
-        if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
-        registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
-        
-        if(callback) callback();
-    }
+    if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
+    registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
+    
+    if(callback) callback();
 }
 
-void CPU::run(uint8_t program[], size_t program_size) {
-    run(program, program_size, nullptr);
+void CPU::run() {
+    run(nullptr);
+}
+
+void CPU::load_and_run(uint8_t program[], size_t program_size) {
+    load(program, program_size);
+    uint8_t opcode;
+
+    do {
+        opcode = memory[registers.PC];
+        run();
+    } while(opcode != 0x00);
+}
+
+void CPU::load(uint8_t program[], size_t program_size) {
+    memoryLoad(program, program_size);
+    if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "program size %u", program_size);
+
 }
 
 void CPU::updateCarryFlag(uint8_t result, uint8_t a, uint8_t b) {

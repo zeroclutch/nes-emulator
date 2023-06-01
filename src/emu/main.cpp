@@ -29,8 +29,13 @@ uint8_t game[] = {
     0xea, 0xca, 0xd0, 0xfb, 0x60
 };
 
+
 void callback() {
     render(&(memory[0x0200]), 32, 32);
+}
+
+void loop(void* cpu) {
+    ((CPU*)cpu)->run(callback);
 }
 
 int main(int argc, char** argv) {
@@ -39,15 +44,12 @@ int main(int argc, char** argv) {
 
     // Initialize CPU
     CPU cpu;
-
-    
-    cpu.run(game, sizeof(game), callback);
     
     // Initialize graphics
 
 
     // Load program into memory
-    // emscripten_set_main_loop_arg(, &(memory[0x0200]), 60, 1);
+    emscripten_set_main_loop_arg(loop, (void*) &cpu, 30, 1);
     
 
     // Execute program

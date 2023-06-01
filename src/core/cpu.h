@@ -45,8 +45,10 @@ class CPU {
         instruction_t fetch(uint8_t opcode);
         uint16_t decode(uint8_t arg0, uint8_t arg1, uint8_t mode);
         void exec(instruction_t *instr, uint8_t opcode, uint16_t arg);
-        void run(uint8_t program[], size_t program_size);
-        void run(uint8_t program[], size_t program_size, void (*callback)(void));
+        void load(uint8_t program[], size_t program_size);
+        void load_and_run(uint8_t program[], size_t program_size);
+        void run();
+        void run(void (*callback)(void));
 
         // Flags
         void updateCarryFlag(uint8_t value, uint8_t a, uint8_t b);
@@ -57,7 +59,6 @@ class CPU {
         void updateFlags(uint8_t value, uint8_t a, uint8_t b);
         
         // Memory
-        uint8_t *memory;
         uint8_t memoryRead(uint16_t address);
         uint16_t memoryReadu16(uint16_t address);
         void memoryWrite(uint16_t address, uint8_t value);

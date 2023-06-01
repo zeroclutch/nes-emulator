@@ -20,7 +20,7 @@ NES_COLOR_RGB* getColor(int color) {
 }
 
 int render(uint8_t *pixels, int width, int height) {
-  printf("hello, world!\n");
+  printf("rendered frame");
 
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Surface *screen = SDL_SetVideoMode(32, 32, 8, SDL_SWSURFACE);
@@ -49,10 +49,7 @@ int render(uint8_t *pixels, int width, int height) {
   if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
   SDL_Flip(screen); 
 
-  printf("you should see a smoothly-colored square - no sharp lines but the square borders!\n");
-  printf("and here is some text that should be HTML-friendly: amp: |&| double-quote: |\"| quote: |'| less-than, greater-than, html-like tags: |<cheez></cheez>|\nanother line.\n");
-
-  SDL_Quit();
+  printf("rendered frame");
 
   return 0;
 }

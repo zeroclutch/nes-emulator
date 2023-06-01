@@ -27,7 +27,7 @@ void test_adc_add_with_immediate() {
     };
 
     // Execute program
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     // Assert that the accumulator contains the correct value
     validate(cpu.registers.A == 0x20, __func__);
@@ -44,7 +44,7 @@ void test_adc_add_with_carry() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_CARRY, __func__);
 }
@@ -60,7 +60,7 @@ void test_adc_add_with_overflow() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_OVERFLOW, __func__);
 }
@@ -76,7 +76,7 @@ void test_and_with_immediate() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.A == 0x8A, __func__);
 }
@@ -93,7 +93,7 @@ void test_and_negative_flag() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
 }
@@ -110,7 +110,7 @@ void test_and_zero_flag() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
@@ -126,7 +126,7 @@ void test_asl_shift_accumulator() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.A == 0xF0, __func__);
 }
@@ -142,7 +142,7 @@ void test_asl_shift_with_carry() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_CARRY, __func__);
 }
@@ -157,7 +157,7 @@ void test_asl_shift_with_zero() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
@@ -172,7 +172,7 @@ void test_asl_shift_with_negative() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
 }
@@ -189,7 +189,7 @@ void test_bcc_branch_forward() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x01, __func__);
 }
@@ -208,7 +208,7 @@ void test_bcc_branch_reverse() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x01, __func__);
 }
@@ -226,7 +226,7 @@ void test_bcc_no_branch_with_carry_set() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -244,7 +244,7 @@ void test_bcs_branch_with_carry_set() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -263,7 +263,7 @@ void test_bcs_branch_with_carry_clear() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -281,7 +281,7 @@ void test_beq_branch_with_zero_set() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -299,7 +299,7 @@ void test_beq_branch_with_zero_clear() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -318,7 +318,7 @@ void test_bit_zero_page() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(!(cpu.registers.P & FLAG_ZERO)
              && !(cpu.registers.P & FLAG_NEGATIVE)
@@ -342,7 +342,7 @@ void test_bit_absolute() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(!(cpu.registers.P & FLAG_ZERO)
              && !(cpu.registers.P & FLAG_NEGATIVE)
@@ -364,7 +364,7 @@ void test_bmi_branch_with_negative_set() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -382,7 +382,7 @@ void test_bmi_branch_with_negative_clear() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -400,7 +400,7 @@ void test_bne_branch_with_zero_clear() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -418,7 +418,7 @@ void test_bne_branch_with_zero_set() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -436,7 +436,7 @@ void test_bpl_branch_with_negative_clear() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -454,7 +454,7 @@ void test_bpl_branch_with_negative_set() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -466,7 +466,7 @@ void test_brk() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_BREAK, __func__);
 }
@@ -484,7 +484,7 @@ void test_bvc_branch_with_overflow_clear() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -502,7 +502,7 @@ void test_bvc_branch_with_overflow_set() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -520,7 +520,7 @@ void test_bvs_branch_with_overflow_set() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x00, __func__);
 }
@@ -538,7 +538,7 @@ void test_bvs_branch_with_overflow_clear() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x02, __func__);
 }
@@ -553,7 +553,7 @@ void test_clc() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(!(cpu.registers.P & FLAG_CARRY), __func__);
 }
@@ -568,7 +568,7 @@ void test_cld() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(!(cpu.registers.P & FLAG_DECIMAL), __func__);
 }
@@ -583,7 +583,7 @@ void test_cli() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(!(cpu.registers.P & FLAG_INTERRUPT), __func__);
 }
@@ -598,7 +598,7 @@ void test_clv() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(!(cpu.registers.P & FLAG_OVERFLOW), __func__);
 }
@@ -612,7 +612,7 @@ void test_lda_immediate_load_data() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.A == 0x42, __func__);
 }
@@ -626,7 +626,7 @@ void test_lda_zero_flag() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
@@ -640,7 +640,7 @@ void test_lda_negative_flag() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
 }
@@ -655,7 +655,7 @@ void test_ldx_immediate_load_data() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x42, __func__);
 }
@@ -669,7 +669,7 @@ void test_ldx_zero_flag() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
@@ -683,7 +683,7 @@ void test_ldx_negative_flag() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
 }
@@ -698,7 +698,7 @@ void test_ldy_immediate_load_data() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.Y == 0x42, __func__);
 }
@@ -712,7 +712,7 @@ void test_ldy_zero_flag() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_ZERO, __func__);
 }
@@ -726,7 +726,7 @@ void test_ldy_negative_flag() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.P & FLAG_NEGATIVE, __func__);
 }
@@ -745,7 +745,7 @@ void test_sta_store_accumulator_with_absolute() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.memoryRead(0x0500) == 0x42, __func__);
 
@@ -769,7 +769,7 @@ void test_sta_store_accumulator_zero_page() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.memoryRead(0x0500) == 0x42, __func__);
     
@@ -792,7 +792,7 @@ void test_stx_store_x_with_absolute() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.memoryRead(0x0500) == 0x43, __func__);
 
@@ -816,7 +816,7 @@ void test_stx_store_x_with_zero_page() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.memoryRead(0x0500) == 0x43, __func__);
 
@@ -840,7 +840,7 @@ void test_sty_store_y_with_absolute() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.memoryRead(0x0500) == 0x44, __func__);
 
@@ -864,7 +864,7 @@ void test_sty_store_y_with_zero_page() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.memoryRead(0x0500) == 0x44, __func__);
 
@@ -881,7 +881,7 @@ void test_tax_move_a_to_x() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.A == cpu.registers.X, __func__);
 }
@@ -897,7 +897,7 @@ void test_5_ops_working_together() {
         0x00, // BRK
     };
 
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0xC1, __func__);
 }
@@ -913,7 +913,7 @@ void test_inx_overflow() {
         0x00, // BRK
     };
     
-    cpu.run(program, sizeof(program));
+    cpu.load_and_run(program, sizeof(program));
 
     validate(cpu.registers.X == 0x01, __func__);
 }
