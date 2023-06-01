@@ -123,7 +123,7 @@ void CPU::exec(instruction_t *instr, uint8_t opcode, uint16_t arg) {
     }
 }
 
-void CPU::run(uint8_t program[], size_t program_size) {
+void CPU::run(uint8_t program[], size_t program_size, void (*callback)(void)) {
     memoryLoad(program, program_size);
     if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "program size %u", program_size);
 
@@ -150,8 +150,13 @@ void CPU::run(uint8_t program[], size_t program_size) {
 
         if(VERBOSE) emscripten_log(EM_LOG_CONSOLE, "%u name, %u arg0, %u arg1, %u arg", instr.name, arg0, arg1, arg);
         registers.PC += instr.bytes; // Increment PC by number of bytes in instruction + 1 for opcode
+        
+        if(callback) callback();
     }
-    
+}
+
+void CPU::run(uint8_t program[], size_t program_size) {
+    run(program, program_size, nullptr);
 }
 
 void CPU::updateCarryFlag(uint8_t result, uint8_t a, uint8_t b) {
@@ -213,7 +218,7 @@ void CPU::memoryWriteu16(uint16_t address, uint16_t value) {
 
 void CPU::memoryLoad(uint8_t block[], size_t size) {
     // Load array into memory
-    uint8_t *start_addr = &memory[MEM_PROGRAM_START];
+    uint8_t *start_addr = &(memory[MEM_PROGRAM_START]);
     memcpy(start_addr, block, size);
 }
 
@@ -326,6 +331,7 @@ void CPU::BRK(uint8_t mode, uint16_t arg) {
     // pushStack(registers.P);
     // registers.P |= FLAG_INTERRUPT;
     // registers.PC = memoryReadu16(0xFFFE);
+    registers.P |= FLAG_BREAK | FLAG_UNUSED;
 
     registers.P |= FLAG_BREAK;
 }
@@ -521,6 +527,7 @@ void CPU::PHA(uint8_t mode, uint16_t arg) {
 
 // Push Processor Status
 void CPU::PHP(uint8_t mode, uint16_t arg) {
+    registers.P |= FLAG_BREAK | FLAG_UNUSED;
     pushStack(registers.P);
 }
 

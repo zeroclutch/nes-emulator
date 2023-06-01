@@ -5,7 +5,7 @@ CC := emcc
 # Compiler flags
 CFLAGS := -std=c++11 -Wall -g
 # Linker flags
-LDFLAGS := -s WASM=1
+LDFLAGS := -s WASM=1 -s USE_SDL=1 -s FULL_ES2=1 -s FULL_ES3=1 -s USE_WEBGL2=1 -s ALLOW_MEMORY_GROWTH=1
 
 # Directories
 SRCDIR := src
